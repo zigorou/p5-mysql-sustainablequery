@@ -4,10 +4,12 @@ use strict;
 use warnings;
 use Class::Accessor::Lite (
     new => 0,
-    rw  => [qw/wait_interval check_strategy_interval strategy logger exec_query terminate_condition/],
+    rw  => [qw/wait_interval check_strategy_interval strategy log exec_query terminate_condition/],
 );
 use POSIX ();
 use Time::HiRes ();
+
+use MySQL::SustainableQuery::Log;
 
 our $VERSION = '0.01';
 
@@ -21,22 +23,33 @@ sub new {
             class => 'ByLoad',
             args  => +{},
         },
-        logger => sub {
-            my ( $level, @messages ) = @_;
-            for (@messages) {
-                printf("[%s %s] %s\n", $level, POSIX::strftime("%Y-%m-%d %H:%M:%S", localtime), $_);
-            }
-        },
+        log => undef,
         exec_query => sub { 1; },
         terminate_condition => sub { 1; },
         %$args,
     );
+
     bless $args => $class;
+}
+
+sub setup {
+    my $self = shift;
+    $self->setup_log;
+    $self->setup_strategy;
+}
+
+sub setup_log {
+    my $self = shift;
+    $self->{log} = MySQL::SustainableQuery::Log->new( $self->{log} );
+}
+
+sub setup_strategy {
+    my $self = shift;
 }
 
 sub run {
     my $self = shift;
-    $self->setup_strategy();
+
     my $i = 1;
     my $time_sum = 0;
     my $time_total = 0;
@@ -44,23 +57,23 @@ sub run {
     for (;;) {
         my $t0 = [ Time::HiRes::gettimeofday ];
         my $rv = $self->exec_query->( $self, $i );
-        my $elapsed = tv_interval ( $t0, [gettimeofday]);
+        my $elapsed = tv_interval ( $t0, [ Time::HiRes::gettimeofday ]);
         $time_sum += $elapsed;
         $time_total += $elapsed;
 
         if ( $self->terminate_condition->( $self, $rv, $i, $time_sum ) ) {
-            # $self->log( 'INFO', sprintf('finished, execute total time: %.3f sec (counter: %d)', $time_total, $i) );
+            $self->log->info( sprintf('finished, execute total time: %.3f sec (counter: %d)', $time_total, $i) );
             last;
         }
 
         if ( $i % $self->check_strategy_interval == 0 ) {
-            my $total_wait = $self->strategy->check( $self, $time_sum, $i );
-            $wait_interval = $self->wait_interval + $total_wait / $self->check_strategy_interval;
+            my $wait_time = $self->strategy->wait_correction( $self, $time_sum, $i );
+            $wait_interval = $self->wait_interval + $wait_time;
             $time_sum = 0;
         }
 
         if ( $wait_interval > 0 ) {
-            # $self->log( 'INFO', sprintf('execute elapsed: %.3f sec, wait interval %.3f sec (counter: %d)', $elapsed, $wait_interval, $i) );
+            $self->log->info( sprintf('execute elapsed: %.3f sec, wait interval %.3f sec (counter: %d)', $elapsed, $wait_interval, $i) );
             Time::HiRes::sleep( $wait_interval );
         }
 
@@ -68,12 +81,8 @@ sub run {
     }
 }
 
-sub log {
-    my ( $self, $level, @messages ) = @_;
-    $self->logger->( $level, @messages );
-}
-
 1;
+
 __END__
 
 =head1 NAME
