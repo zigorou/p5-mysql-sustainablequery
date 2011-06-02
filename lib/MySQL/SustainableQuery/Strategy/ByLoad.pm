@@ -21,7 +21,7 @@ sub new {
 
 sub wait_correction {
     my ( $self, $query, $elapsed, $i ) = @_;
-    return max( $elapsed, 0 ) * ( 1 - $self->{load} ) / $self->{load};
+    return ( max( $elapsed, 0 ) * ( 1 - $self->{load} ) / $self->{load} ) / $query->check_strategy_interval;
 }
 
 1;

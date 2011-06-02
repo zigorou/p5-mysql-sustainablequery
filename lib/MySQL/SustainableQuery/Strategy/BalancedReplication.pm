@@ -42,7 +42,7 @@ sub wait_correction {
         $second_behind_master = max($self->{capable_behind_seconds}, 5) * $self->{on_error_scale_factor};
     };
 
-    return $second_behind_master / $query->check_strategy_interval;
+    return ( $second_behind_master - $self->{capable_behind_seconds} ) / $query->check_strategy_interval;
 }
 
 1;

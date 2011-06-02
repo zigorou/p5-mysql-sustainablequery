@@ -67,7 +67,7 @@ __END__
 
 =head1 NAME
 
-MySQL::SustainableQuery::Log - write short description for MySQL::SustainableQuery::Log
+MySQL::SustainableQuery::Log - Logger for MySQL::SustainableQuery
 
 =head1 SYNOPSIS
 

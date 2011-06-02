@@ -6,6 +6,7 @@ use Class::Accessor::Lite (
     new => 0,
     rw  => [qw/wait_interval check_strategy_interval strategy log exec_query terminate_condition/],
 );
+use Class::Load qw(load_class);
 use POSIX ();
 use Time::HiRes ();
 
@@ -45,6 +46,16 @@ sub setup_log {
 
 sub setup_strategy {
     my $self = shift;
+
+    my $config = $self->{strategy};
+    my $strategy_module = $config->{class};
+
+    $strategy_module = index($strategy_module, '+') == 0 ?
+        substr($strategy_module, 1) : 'MySQL::SustainableQuery::Strategy::' . $strategy_module;
+    load_class( $strategy_module );
+
+    my $strategy = $strategy_module->new( $config->{args} );
+    $self->{strategy} = $strategy;
 }
 
 sub run {
