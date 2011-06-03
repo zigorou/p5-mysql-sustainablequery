@@ -8,7 +8,7 @@ our $VERSION = '0.01';
 our @LEVELS = qw(debug info notice warning error alert emergency);
 our %LOGGER_DISPATCH_METHODS = (
     'Log::Dispatch' => [ qw/debug info notice warning error critical alert emergency/ ],
-    'Log::Log4perl' => [ qw/debug info info warn error fatal fatal fatal/ ],
+    'Log::Log4perl::Logger' => [ qw/debug info info warn error fatal fatal fatal/ ],
 );
 
 sub new {
@@ -16,8 +16,10 @@ sub new {
 
     my $attrs = +{};
     if ( defined $logger && Scalar::Util::blessed($logger) ) {
+        my $is_supported_logger = 0;
         for my $supported_logger_class ( keys %LOGGER_DISPATCH_METHODS ) {
             if ( UNIVERSAL::isa($logger, $supported_logger_class) ) {
+                $is_supported_logger = 1;
                 my $dispatch_methods = $LOGGER_DISPATCH_METHODS{$supported_logger_class};
                 my $i = 0;
                 for my $level ( @LEVELS ) {
@@ -30,8 +32,12 @@ sub new {
                 last;
             }
         }
+        unless ( $is_supported_logger ) {
+            $logger = undef;
+        }
     }
-    else {
+
+    if (!defined $logger || ref $logger eq 'CODE') {
         require POSIX;
         $logger ||= sub {
             my ( $level, @messages ) = @_;
