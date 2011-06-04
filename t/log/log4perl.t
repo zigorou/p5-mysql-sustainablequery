@@ -4,8 +4,9 @@ use warnings;
 use Test::More;
 use Test::Exception;
 use Test::Requires qw(
-    Log::Log4perl
+  Log::Log4perl
 );
+use Test::Output;
 
 use Log::Log4perl;
 use Log::Log4perl::Layout;
@@ -13,30 +14,32 @@ use Log::Log4perl::Level;
 use MySQL::SustainableQuery::Log;
 
 sub create_logger {
-    my $logger = Log::Log4perl->get_logger('main');
+    my $logger          = Log::Log4perl->get_logger('main');
     my $screen_appender = Log::Log4perl::Appender->new(
         "Log::Log4perl::Appender::Screen",
-        name      => "screenlog",
-        stderr    => 0
+        name   => "screenlog",
+        stderr => 0,
     );
-    $screen_appender->layout(
-        Log::Log4perl::Layout::PatternLayout->new("[%r] %F %L %m%n")
-    );
+    $screen_appender->layout( Log::Log4perl::Layout::PatternLayout->new("%m") );
     $logger->add_appender($screen_appender);
+    $logger->level($DEBUG);
     $logger;
 }
 
 my $logger = create_logger;
 
-note explain $logger;
-
 my $log;
 lives_and {
-    $log = MySQL::SustainableQuery::Log->new( $logger );
+    $log = MySQL::SustainableQuery::Log->new($logger);
+
     isa_ok( $log, 'MySQL::SustainableQuery::Log' );
-    for my $level ( @MySQL::SustainableQuery::Log::LEVELS ) {
-        can_ok( $log, $level, qq{can $level method} );
+    can_ok( $log, @MySQL::SustainableQuery::Log::LEVELS );
+
+    for my $level (@MySQL::SustainableQuery::Log::LEVELS) {
+        stdout_like( sub { $log->$level($level) },
+            qr/$level/, sprintf( "%s() output", $level ) );
     }
+
 } 'new() lives ok';
 
 done_testing;
