@@ -6,13 +6,14 @@ use Test::Exception;
 use Test::Requires qw(
     Log::Dispatch
 );
+use Test::Output;
 
 use Log::Dispatch;
 use MySQL::SustainableQuery::Log;
 
 my $logger = Log::Dispatch->new(
     outputs => [
-        [ 'Screen', min_level => 'debug' ],
+        [ 'Screen', min_level => 'debug', stderr => 0, ],
     ],
 );
 
@@ -21,8 +22,11 @@ my $log;
 lives_and {
     $log = MySQL::SustainableQuery::Log->new( $logger );
     isa_ok( $log, 'MySQL::SustainableQuery::Log' );
-    for my $level ( @MySQL::SustainableQuery::Log::LEVELS ) {
-        can_ok( $log, $level, qq{can $level method} );
+    can_ok( $log, @MySQL::SustainableQuery::Log::LEVELS );
+
+    for my $level (@MySQL::SustainableQuery::Log::LEVELS) {
+        stdout_like( sub { $log->$level($level) },
+            qr/$level/, sprintf( "%s() output", $level ) );
     }
 } 'new() lives ok';
 
