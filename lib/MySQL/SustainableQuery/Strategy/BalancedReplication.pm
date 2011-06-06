@@ -29,20 +29,25 @@ sub new {
 sub wait_correction {
     my ( $self, $query, $elapsed, $i ) = @_;
 
-    my $second_behind_master;
+    my $second_behind_master; ;
 
     try {
         my $dbh = $self->{dbh};
         my $status = $dbh->selectrow_hashref('SHOW SLAVE STATUS') or croak($dbh->errstr);
-        $second_behind_master = $status->{Seconds_Behind_Master};
+        if ( defined $status->{Seconds_Behind_Master} ) {
+            $second_behind_master = $status->{Seconds_Behind_Master};
+        }
     }
     catch {
         my $e = $_;
         $query->log->critical( $e );
-        $second_behind_master = max($self->{capable_behind_seconds}, 5) * $self->{on_error_scale_factor};
     };
 
-    return ( $second_behind_master - $self->{capable_behind_seconds} ) / $query->check_strategy_interval;
+    unless ( defined $second_behind_master ) {
+        $second_behind_master = max($self->{capable_behind_seconds}, 5) * $self->{on_error_scale_factor};
+    }
+
+    return max( ( $second_behind_master - $self->{capable_behind_seconds} ) / $query->check_strategy_interval, 0 );
 }
 
 1;
