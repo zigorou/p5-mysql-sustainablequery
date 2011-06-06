@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Requires 'DBD::Mock';
 
 use DBI;
 use MySQL::SustainableQuery;

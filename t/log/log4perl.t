@@ -5,6 +5,8 @@ use Test::More;
 use Test::Exception;
 use Test::Requires qw(
   Log::Log4perl
+  Log::Log4perl::Layout
+  Log::Log4perl::Level
 );
 use Test::Output;
 
