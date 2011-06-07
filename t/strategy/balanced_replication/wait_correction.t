@@ -4,6 +4,7 @@ use warnings;
 use Test::More;
 
 use DBI;
+use DBD::Mock;
 use MySQL::SustainableQuery;
 
 sub create_query_and_strategy {
@@ -117,6 +118,31 @@ subtest 'check_strategy_interval: 10, capable_behind_seconds: 10; on_error_scale
     is( $strategy->wait_correction( $query, 10, 1 ), 4, 'elapsed: 10, wait_time: 0' );
     is( $strategy->wait_correction( $query, 3, 1 ), 4, 'elapsed: 3, wait_time: 0' );
 };
+
+subtest 'check_strategy_interval: 10, capable_behind_seconds: 10; on_error_scale_factor: 5; Seconds_Behind_Master: undef, on_error' => sub {
+    my $dbh = DBI->connect('dbi:Mock:', '', '');
+    $dbh->{mock_add_resultset} = +{
+        sql => 'SHOW SLAVE STATUS',
+        results => DBD::Mock->NULL_RESULTSET,
+        failure => [ 5, 'Mock error' ],
+    };
+
+    my ( $query, $strategy ) = create_query_and_strategy(
+        check_strategy_interval => 10,
+        strategy => +{
+            class => 'BalancedReplication',
+            args => +{
+                dbh => $dbh,
+                capable_behind_seconds => 10,
+                on_error_scale_factor => 5,
+            },
+        },
+    );
+
+    is( $strategy->wait_correction( $query, 10, 1 ), 4, 'elapsed: 10, wait_time: 0' );
+    is( $strategy->wait_correction( $query, 3, 1 ), 4, 'elapsed: 3, wait_time: 0' );
+};
+
 
 done_testing;
 

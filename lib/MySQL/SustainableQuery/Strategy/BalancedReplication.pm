@@ -40,7 +40,7 @@ sub wait_correction {
     }
     catch {
         my $e = $_;
-        $query->log->critical( $e );
+        $query->log->error( $e );
     };
 
     unless ( defined $second_behind_master ) {

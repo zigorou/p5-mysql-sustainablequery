@@ -72,7 +72,7 @@ sub run {
     for ( ; ; ) {
         my $t0      = [Time::HiRes::gettimeofday];
         my $rv      = $self->exec_query->( $self, $i );
-        my $elapsed = tv_interval( $t0, [Time::HiRes::gettimeofday] );
+        my $elapsed = Time::HiRes::tv_interval( $t0, [Time::HiRes::gettimeofday] );
         $time_sum   += $elapsed;
         $time_total += $elapsed;
 
