@@ -19,7 +19,7 @@ __END__
 
 =head1 NAME
 
-MySQL::SustainableQuery::Strategy - write short description for MySQL::SustainableQuery::Strategy
+MySQL::SustainableQuery::Strategy - Strategy base class
 
 =head1 SYNOPSIS
 
@@ -28,6 +28,10 @@ MySQL::SustainableQuery::Strategy - write short description for MySQL::Sustainab
 =head1 DESCRIPTION
 
 =head1 METHODS
+
+=head2 new( %args )
+
+=head2 wait_correction( $query, $time_sum, $executed_count )
 
 =head1 AUTHOR
 

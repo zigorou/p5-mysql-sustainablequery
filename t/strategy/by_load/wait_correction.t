@@ -7,7 +7,6 @@ use MySQL::SustainableQuery;
 
 sub create_query_and_strategy {
     my $query = MySQL::SustainableQuery->new(@_);
-    $query->setup;
     my $strategy = $query->strategy;
 
     return ( $query, $strategy );

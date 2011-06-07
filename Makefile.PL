@@ -8,7 +8,7 @@ requires 'DBI';
 requires 'POSIX';
 requires 'Time::HiRes';
 
-tests 't/*.t';
+tests_recursive 't';
 author_tests 'xt';
 
 test_requires 'DBD::Mock';

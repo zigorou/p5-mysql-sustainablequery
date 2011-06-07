@@ -42,7 +42,7 @@ sub new {
         $logger ||= sub {
             my ( $level, @messages ) = @_;
             for ( @messages ) {
-                printf("[%s %s] %s\n", $level, POSIX::strftime("%Y-%m-%d %H:%M:%S", localtime), $_);
+                print STDERR sprintf("[%s %s] %s\n", $level, POSIX::strftime("%Y-%m-%d %H:%M:%S", localtime), $_);
             };
         };
 
@@ -82,6 +82,22 @@ MySQL::SustainableQuery::Log - Logger for MySQL::SustainableQuery
 =head1 DESCRIPTION
 
 =head1 METHODS
+
+=head2 new( $logger )
+
+=head2 debug( @msg )
+
+=head2 info( @msg )
+
+=head2 notice( @msg )
+
+=head2 warning( @msg )
+
+=head2 error( @msg )
+
+=head2 alert( @msg )
+
+=head2 emergency( @msg )
 
 =head1 AUTHOR
 

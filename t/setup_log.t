@@ -8,7 +8,6 @@ use MySQL::SustainableQuery;
 subtest 'setup_log() default' => sub {
     my $query = MySQL::SustainableQuery->new;
     lives_and {
-        $query->setup_log;
         isa_ok( $query->log, 'MySQL::SustainableQuery::Log' );
     };
 };

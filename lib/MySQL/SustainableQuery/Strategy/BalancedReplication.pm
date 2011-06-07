@@ -66,6 +66,24 @@ MySQL::SustainableQuery::Strategy::BalancedReplication - write short description
 
 =head1 METHODS
 
+=head1 METHODS
+
+=head2 new( %args )
+
+=over
+
+=item dbh
+
+L<DBI::db> object
+
+=item capable_behind_seconds
+
+=item on_error_scale_factor
+
+=back
+
+=head2 wait_correction( $query, $time_sum, $executed_count )
+
 =head1 AUTHOR
 
 Toru Yamaguchi E<lt>zigorou@dena.jp<gt>

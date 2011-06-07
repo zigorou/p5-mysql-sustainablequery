@@ -9,7 +9,6 @@ use MySQL::SustainableQuery;
 
 sub create_query {
     my $query = MySQL::SustainableQuery->new(@_);
-    $query->setup;
     $query;
 }
 

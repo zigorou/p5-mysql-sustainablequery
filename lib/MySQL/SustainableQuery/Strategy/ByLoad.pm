@@ -40,6 +40,20 @@ MySQL::SustainableQuery::Strategy::ByLoad - write short description for MySQL::S
 
 =head1 METHODS
 
+=head1 METHODS
+
+=head2 new( %args )
+
+=over
+
+=item load
+
+The ratio of executed time.
+
+=back
+
+=head2 wait_correction( $query, $time_sum, $executed_count )
+
 =head1 AUTHOR
 
 Toru Yamaguchi E<lt>zigorou@dena.jp<gt>

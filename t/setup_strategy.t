@@ -14,7 +14,6 @@ subtest 'Setup MySQL::SustainableQuery::Strategy::Byload' => sub {
     });
 
     lives_and {
-        $query->setup_strategy;
         isa_ok( $query->strategy, 'MySQL::SustainableQuery::Strategy::ByLoad' );
         can_ok( $query->strategy, 'wait_correction' );
     } 'setup_strategy() lives ok';
@@ -29,7 +28,6 @@ subtest 'Setup MySQL::SustainableQuery::Strategy::BalancedReplication' => sub {
     });
 
     lives_and {
-        $query->setup_strategy;
         isa_ok( $query->strategy, 'MySQL::SustainableQuery::Strategy::BalancedReplication' );
         can_ok( $query->strategy, 'wait_correction' );
     } 'setup_strategy() lives ok';

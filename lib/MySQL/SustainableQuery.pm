@@ -32,13 +32,15 @@ sub new {
         %$args,
     );
 
-    bless $args => $class;
+    my $self = bless $args => $class;
+    $self->setup;
 }
 
 sub setup {
     my $self = shift;
     $self->setup_log;
     $self->setup_strategy;
+    $self;
 }
 
 sub setup_log {
@@ -117,15 +119,91 @@ __END__
 
 =head1 NAME
 
-MySQL::SustainableQuery -
+MySQL::SustainableQuery - Execute query sustainably by strategy
 
 =head1 SYNOPSIS
 
+  use DBI;
   use MySQL::SustainableQuery;
+
+  my $dbh = DBI->connect( ... );
+
+  my $query = MySQL::SustainableQuery->new(
+    exec_query => sub {
+      my ( $q, $i ) = @_;
+      return $dbh->do('DELETE FROM large_table ORDER BY id ASC LIMIT 100');
+    },
+    terminate_condition => sub {
+      my ( $q, $rv, $i, $ts ) = @_;
+      $rv < 100 ? 1 : 0;
+    }
+  );
+
+  my $rs = $query->run;
+  printf("execute count: %d; total times: %.02f sec\n", $rs->{executed}, $rs->{time_total});
 
 =head1 DESCRIPTION
 
-MySQL::SustainableQuery is
+MySQL::SustainableQuery executes query to care load time or replication behind times or other factor.
+
+=head2 new( %args )
+
+The details of args is below.
+
+=over
+
+=item wait_interval
+
+Base interval time (seconds).
+
+=item check_strategy_interval
+
+The interval count calling strategy's wait_correction() method.
+
+=item strategy
+
+=over
+
+=item class
+
+Specify strategy class name. When the strategy class name is beggining of 'MySQL::SustainableQuery::Strategy::',
+you can omit it likes 'ByLoad' or 'BalancedReplication'.
+
+=item args
+
+Arguments passed to strategy modules's new() method.
+
+=back
+
+=item log
+
+Specify logger object or code reference.
+
+=item exec_query
+
+Specify code rederence to execute query.
+
+=item terminate_condition
+
+Specify code rederence to judge which it can terminate or not.
+
+=back
+
+=head2 run()
+
+Execute query.
+
+=head2 setup()
+
+Internal uses.
+
+=head2 setup_log()
+
+Internal uses.
+
+=head2 setup_strategy()
+
+Internal uses.
 
 =head1 AUTHOR
 
